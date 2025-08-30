@@ -197,14 +197,6 @@
         .result-description {
             font-size: 1em;
             opacity: 0.9;
-            margin-bottom: 20px;
-        }
-
-        .result-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
         }
 
         .btn-dashboard {
@@ -215,6 +207,8 @@
             border-radius: 8px;
             text-decoration: none;
             display: inline-block;
+            margin-top: 15px;
+            margin-right: 10px;
             transition: all 0.3s ease;
         }
 
@@ -233,6 +227,7 @@
             font-size: 1em;
             font-weight: 600;
             transition: all 0.3s ease;
+            margin-top: 15px;
         }
 
         .btn-new-register:hover {
@@ -252,15 +247,9 @@
         }
 
         @media (min-width: 600px) {
-            .result-buttons {
-                flex-direction: row;
-                justify-content: center;
-            }
-            
             .btn-dashboard,
             .btn-new-register {
-                flex: 1;
-                max-width: 200px;
+                display: inline-block;
             }
         }
     </style>
@@ -490,7 +479,6 @@
     </script>
 </body>
 </html>
-
 
 
 
