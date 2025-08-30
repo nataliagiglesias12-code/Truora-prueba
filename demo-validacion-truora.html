@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Truora - Validación de Identidad</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .container { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); backdrop-filter: blur(10px); width: 100%; max-width: 500px; text-align: center; }
+    .logo { font-size: 2.5em; font-weight: 700; background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .subtitle { color: #7f8c8d; font-size: 1.1em; margin-bottom: 30px; }
+    .form-group { margin-bottom: 25px; text-align: left; }
+    label { display: block; color: #2c3e50; font-weight: 600; margin-bottom: 8px; font-size: 1em; }
+    input[type="text"], input[type="tel"] { width: 100%; padding: 15px 20px; border: 2px solid #e0e6ed; border-radius: 12px; font-size: 1em; transition: all 0.3s ease; background: white; }
+    input[type="text"]:focus, input[type="tel"]:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); transform: translateY(-2px); }
+    .btn-primary { width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 18px 30px; border-radius: 12px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px; }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+    .loading, .result { display: none; margin-top: 20px; padding: 20px; border-radius: 12px; }
+    .loading.show { display: block; border-left: 4px solid #667eea; background: #f8f9fa; }
+    .result.show { display: block; text-align: center; color: white; }
+    .success { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+    .warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+    .danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .progress-bar { width: 100%; height: 8px; background: #e0e6ed; border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.3s ease; }
+    .step { opacity: 0.5; font-size: 0.9em; margin-bottom: 5px; }
+    .step.active { opacity: 1; font-weight: bold; color: #667eea; }
+    .demo-note { margin-top: 30px; font-size: 0.9em; background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; color: #856404; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🔐 TRUORA</div>
+    <p class="subtitle">Validación de Identidad Inteligente</p>
+    <form id="validationForm">
+      <div class="form-group"><label for="nombre">Nombre completo</label><input type="text" id="nombre" required placeholder="Ej: Juan Pérez"/></div>
+      <div class="form-group"><label for="telefono">Número de teléfono</label><input type="tel" id="telefono" required placeholder="Ej: +57 300 123 4567"/></div>
+      <div class="form-group"><label for="empresa">Empresa solicitante</label><input type="text" id="empresa" required placeholder="Ej: ADDI"/></div>
+      <button type="submit" class="btn-primary">🚀 Iniciar Validación</button>
+    </form>
+    <div class="loading" id="loadingSection">
+      <div class="loading-text">⚡ Procesando validación...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="step" id="step1">📄 Analizando documento...</div>
+      <div class="step" id="step2">🤳 Verificando biometría...</div>
+      <div class="step" id="step3">🤖 Detectando patrones de fraude...</div>
+      <div class="step" id="step4">✅ Generando resultado...</div>
+    </div>
+    <div class="result" id="resultSection">
+      <div class="result-icon" id="resultIcon" style="font-size: 3em;"></div>
+      <h2 id="resultTitle"></h2>
+      <p id="resultDescription"></p>
+      <a href="#" class="btn-dashboard" id="dashboardBtn">📊 Ver Dashboard</a>
+    </div>
+    <div class="demo-note">💡 <strong>Demo:</strong> Resultados simulados aleatoriamente. No corresponde a datos reales.</div>
+  </div>
+  <script>
+    const SUPABASE_URL = 'https://hsflgsnvcwwbmnmcblfv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzZmxnc252Y3d3Ym1ubWNibGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1NjEyNjksImV4cCI6MjA3MjEzNzI2OX0.svszpLac0yeixbjDZoq6IfP32HcwNaNQ4ue95YinH2U';
+    const DASHBOARD_URL = '#';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    document.getElementById('validationForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value;
+      const telefono = document.getElementById('telefono').value;
+      const empresa = document.getElementById('empresa').value;
+      document.getElementById('validationForm').style.display = 'none';
+      document.getElementById('loadingSection').classList.add('show');
+      let recordId = null;
+      const { data } = await supabase.from('validaciones').insert([{ nombre, telefono, empresa, estado: 'procesando' }]).select();
+      if (data && data.length > 0) recordId = data[0].id;
+      await runSteps();
+      const resultado = generarResultadoAleatorio(nombre);
+      await supabase.from('validaciones').update({
+        estado: 'completado',
+        resultado: resultado.titulo.toLowerCase(),
+        score_riesgo: resultado.score,
+        tiempo_procesamiento: Math.floor(Math.random() * 5) + 26
+      }).eq('id', recordId);
+      mostrarResultado(resultado);
+    });
+    async function runSteps() {
+      const steps = ['step1', 'step2', 'step3', 'step4'];
+      for (let i = 0; i < steps.length; i++) {
+        document.getElementById(steps[i]).classList.add('active');
+        document.getElementById('progressFill').style.width = ((i + 1) * 25) + '%';
+        await new Promise(res => setTimeout(res, 2000));
+        document.getElementById(steps[i]).classList.remove('active');
+      }
+    }
+    function generarResultadoAleatorio(nombre) {
+      const rand = Math.random();
+      if (rand < 0.85) {
+        return { tipo: 'success', icon: '✅', titulo: 'APROBADO', descripcion: `${nombre} fue validado exitosamente.`, score: Math.floor(Math.random() * 11) + 85 };
+      } else if (rand < 0.95) {
+        return { tipo: 'warning', icon: '⚠️', titulo: 'REVISIÓN MANUAL', descripcion: `${nombre} requiere verificación adicional.`, score: Math.floor(Math.random() * 11) + 60 };
+      } else {
+        return { tipo: 'danger', icon: '❌', titulo: 'RECHAZADO', descripcion: `${nombre} fue rechazado por fraude.`, score: Math.floor(Math.random() * 20) + 5 };
+      }
+    }
+    function mostrarResultado(r) {
+      document.getElementById('loadingSection').classList.remove('show');
+      const resultSection = document.getElementById('resultSection');
+      resultSection.className = `result show ${r.tipo}`;
+      document.getElementById('resultIcon').textContent = r.icon;
+      document.getElementById('resultTitle').textContent = r.titulo;
+      document.getElementById('resultDescription').textContent = r.descripcion;
+      document.getElementById('dashboardBtn').href = DASHBOARD_URL;
+    }
+  </script>
+</body>
+</html>
