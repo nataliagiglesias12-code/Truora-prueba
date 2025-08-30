@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -107,11 +108,18 @@
       <label for="empresa">Empresa solicitante</label>
       <input type="text" id="empresa" name="empresa" required placeholder="Ej: ADDI">
     </div>
-    <button type="button" class="btn-primary" id="submitBtn" onclick="submitForm()">🚀 Iniciar Validación</button>
+    <button type="submit" class="btn-primary" id="submitBtn">🚀 Iniciar Validación</button>
   </form>
 
   <div class="loading" id="loadingSection">
-    <p>⏳ Procesando...</p>
+    <p>⚡ Procesando validación...</p>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="height: 8px; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.3s ease;"></div></div>
+    <div class="steps">
+      <div class="step" id="step1">📱 Analizando documento...</div>
+      <div class="step" id="step2">🤳 Verificando biometría...</div>
+      <div class="step" id="step3">🤖 Aplicando ML anti-fraude...</div>
+      <div class="step" id="step4">✅ Generando resultado...</div>
+    </div>
   </div>
 
   <div class="result" id="resultSection">
@@ -130,30 +138,35 @@
 
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function submitForm() {
+  document.getElementById('validationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
     const nombre = document.getElementById('nombre').value;
     const telefono = document.getElementById('telefono').value;
     const empresa = document.getElementById('empresa').value;
-
     document.getElementById('validationForm').style.display = 'none';
     document.getElementById('loadingSection').classList.add('show');
 
-    let recordId = null;
-    try {
-      const { data } = await supabase.from('validaciones').insert([{ nombre, telefono, empresa, estado: 'procesando' }]).select();
-      recordId = data?.[0]?.id || null;
-    } catch (error) {
-      console.error('Error insertando:', error);
-    }
+    const { data } = await supabase.from('validaciones').insert([{ nombre, telefono, empresa, estado: 'procesando' }]).select();
+    const recordId = data?.[0]?.id || null;
 
-    await new Promise(r => setTimeout(r, 3000));
+    const steps = [
+      { id: 'step1', duration: 3000, progress: 25 },
+      { id: 'step2', duration: 5000, progress: 50 },
+      { id: 'step3', duration: 8000, progress: 75 },
+      { id: 'step4', duration: 2000, progress: 100 }
+    ];
+    for (let step of steps) {
+      document.getElementById(step.id).classList.add('active');
+      document.getElementById('progressFill').style.width = step.progress + '%';
+      await new Promise(r => setTimeout(r, step.duration));
+      document.getElementById(step.id).classList.remove('active');
+    }
 
     const resultados = [
       { tipo: 'success', icon: '✅', titulo: 'APROBADO', descripcion: `${nombre} ha sido validado exitosamente.` },
       { tipo: 'warning', icon: '⚠️', titulo: 'REVISIÓN MANUAL', descripcion: `${nombre} requiere verificación adicional.` },
       { tipo: 'danger', icon: '❌', titulo: 'RECHAZADO', descripcion: `Validación de ${nombre} rechazada.` }
     ];
-
     const resultado = resultados[Math.floor(Math.random() * resultados.length)];
 
     if (recordId) {
@@ -168,12 +181,13 @@
     document.getElementById('resultDescription').textContent = resultado.descripcion;
     document.getElementById('dashboardBtn').href = DASHBOARD_URL;
     document.getElementById('retryBtn').style.display = 'inline-block';
-  }
+  });
 
   document.getElementById('retryBtn').addEventListener('click', () => {
     document.getElementById('resultSection').classList.remove('show');
     document.getElementById('validationForm').reset();
     document.getElementById('validationForm').style.display = 'block';
+    document.getElementById('progressFill').style.width = '0%';
   });
 </script>
 </body>
