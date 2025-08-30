@@ -112,23 +112,6 @@
 <a href="#" class="btn-dashboard" id="dashboardBtn">📊 Ver Dashboard</a>
 <br><br>
 <button class="btn-primary" onclick="reiniciarFormulario()">🔁 Realizar otra validación</button>
-function reiniciarFormulario() {
-  // Limpiar campos
-  document.getElementById('nombre').value = '';
-  document.getElementById('telefono').value = '';
-  document.getElementById('empresa').value = '';
-
-  // Ocultar resultado
-  const resultSection = document.getElementById('resultSection');
-  resultSection.classList.remove('show');
-  resultSection.className = 'result';
-
-  // Resetear progreso
-  document.getElementById('progressFill').style.width = '0%';
-
-  // Mostrar formulario
-  document.getElementById('validationForm').style.display = 'block';
-}
 
     }
   </script>
