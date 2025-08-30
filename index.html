@@ -1,177 +1,434 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Validación Truora</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f8fa;
-      margin: 0;
-      padding: 0;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: start;
-      height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truora - Validación de Identidad</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .container {
-      margin-top: 40px;
-      width: 100%;
-      max-width: 400px;
-      background-color: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      text-align: center;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    h1 {
-      font-size: 24px;
-      margin-bottom: 25px;
-      color: #2b6cb0;
-    }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
 
-    input[type="text"],
-    input[type="tel"] {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
+        .logo {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
 
-    .btn-primary {
-      background-color: #2b6cb0;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
 
-    .btn-primary:hover {
-      background-color: #2c5282;
-    }
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
 
-    .progress-bar {
-      width: 100%;
-      background-color: #e2e8f0;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-top: 20px;
-      height: 16px;
-    }
+        label {
+            display: block;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
 
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background-color: #2b6cb0;
-      transition: width 0.5s ease-in-out;
-    }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
 
-    .result {
-      display: none;
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #38a169;
-    }
+        input[type="text"]:focus, input[type="tel"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
 
-    .result.show {
-      display: block;
-    }
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
 
-    .btn-dashboard {
-      display: inline-block;
-      margin-top: 20px;
-      background-color: #38a169;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-    }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
 
-    .btn-dashboard:hover {
-      background-color: #2f855a;
-    }
-  </style>
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e6ed;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .steps {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .step {
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+
+        .step.active {
+            opacity: 1;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .result.warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .result.danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .result-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .result-description {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .btn-dashboard {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-dashboard:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .demo-note {
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="logo">🔐 TRUORA</div>
+        <p class="subtitle">Validación de Identidad Inteligente</p>
+        
+        <form id="validationForm">
+            <div class="form-group">
+                <label for="nombre">Nombre completo</label>
+                <input type="text" id="nombre" name="nombre" required 
+                       placeholder="Ej: Juan Carlos Pérez">
+            </div>
 
-  <div class="container">
-    <h1>Validación Truora</h1>
+            <div class="form-group">
+                <label for="telefono">Número de teléfono</label>
+                <input type="tel" id="telefono" name="telefono" required 
+                       placeholder="Ej: +57 300 123 4567">
+            </div>
 
-    <form id="validationForm">
-      <input type="text" id="nombre" placeholder="Nombre completo" required />
-      <input type="tel" id="telefono" placeholder="Teléfono" required />
-      <input type="text" id="empresa" placeholder="Empresa" required />
-      <button type="submit" class="btn-primary">Validar</button>
-    </form>
+            <div class="form-group">
+                <label for="empresa">Empresa solicitante</label>
+                <input type="text" id="empresa" name="empresa" required 
+                       placeholder="Ej: ADDI">
+            </div>
 
-    <div class="progress-bar" id="progressBar">
-      <div class="progress-bar-fill" id="progressFill"></div>
+            <button type="submit" class="btn-primary" id="submitBtn">
+                🚀 Iniciar Validación
+            </button>
+        </form>
+
+        <div class="loading" id="loadingSection">
+            <div class="loading-text">⚡ Procesando validación...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="steps">
+                <div class="step" id="step1">📱 Analizando documento...</div>
+                <div class="step" id="step2">🤳 Verificando biometría...</div>
+                <div class="step" id="step3">🤖 Aplicando ML anti-fraude...</div>
+                <div class="step" id="step4">✅ Generando resultado...</div>
+            </div>
+        </div>
+
+        <div class="result" id="resultSection">
+            <div class="result-icon" id="resultIcon"></div>
+            <div class="result-title" id="resultTitle"></div>
+            <div class="result-description" id="resultDescription"></div>
+            <a href="#" class="btn-dashboard" id="dashboardBtn">📊 Ver Dashboard</a>
+        </div>
+
+        <div class="demo-note">
+            💡 <strong>Demo en vivo:</strong> Esta es una simulación para fines de presentación. 
+            Los resultados son generados aleatoriamente para mostrar las capacidades del sistema.
+        </div>
     </div>
 
-    <div class="result" id="resultSection">
-      <p>✅ Validación completada con éxito</p>
-      <a href="https://ejemplo.com/dashboard" class="btn-dashboard" id="dashboardBtn" target="_blank">📊 Ver Dashboard</a>
-      <br><br>
-      <button class="btn-primary" onclick="reiniciarFormulario()">🔁 Realizar otra validación</button>
-    </div>
-  </div>
+    <script>
+        // REEMPLAZA ESTAS CREDENCIALES CON LAS TUYAS DE SUPABASE
+        const SUPABASE_URL = 'TU_SUPABASE_URL_AQUI';
+        const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY_AQUI';
+        
+        // URL del dashboard (reemplazar con tu URL de Lovable del dashboard)
+        const DASHBOARD_URL = 'TU_DASHBOARD_URL_AQUI';
 
-  <script>
-    const form = document.getElementById('validationForm');
-    const progressFill = document.getElementById('progressFill');
-    const resultSection = document.getElementById('resultSection');
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      // Ocultar formulario y reiniciar progreso
-      form.style.display = 'none';
-      progressFill.style.width = '0%';
-
-      // Simular barra de progreso durante 30 segundos (3s aquí para demo)
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 1;
-        progressFill.style.width = `${progress}%`;
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          resultSection.classList.add('show');
+        // Inicializar Supabase (solo si las credenciales están configuradas)
+        let supabase = null;
+        if (SUPABASE_URL !== 'TU_SUPABASE_URL_AQUI') {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-      }, 300); // 30s / 100 = 300ms por paso
-    });
 
-    function reiniciarFormulario() {
-      // Limpiar campos
-      document.getElementById('nombre').value = '';
-      document.getElementById('telefono').value = '';
-      document.getElementById('empresa').value = '';
+        document.getElementById('validationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nombre = document.getElementById('nombre').value;
+            const telefono = document.getElementById('telefono').value;
+            const empresa = document.getElementById('empresa').value;
+            
+            // Ocultar formulario y mostrar loading
+            document.getElementById('validationForm').style.display = 'none';
+            document.getElementById('loadingSection').classList.add('show');
+            
+            // Guardar en base de datos (si está configurada)
+            let recordId = null;
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase
+                        .from('validaciones')
+                        .insert([
+                            { 
+                                nombre: nombre, 
+                                telefono: telefono, 
+                                empresa: empresa,
+                                estado: 'procesando'
+                            }
+                        ])
+                        .select();
+                    
+                    if (!error && data.length > 0) {
+                        recordId = data[0].id;
+                    }
+                } catch (error) {
+                    console.log('Error guardando en Supabase:', error);
+                }
+            }
+            
+            // Simular proceso de validación
+            await simulateValidation(recordId, nombre, telefono, empresa);
+        });
 
-      // Ocultar resultado
-      resultSection.classList.remove('show');
-      resultSection.className = 'result';
+        async function simulateValidation(recordId, nombre, telefono, empresa) {
+            const steps = [
+                { id: 'step1', duration: 3000, progress: 25 },
+                { id: 'step2', duration: 5000, progress: 50 },
+                { id: 'step3', duration: 8000, progress: 75 },
+                { id: 'step4', duration: 2000, progress: 100 }
+            ];
 
-      // Resetear progreso
-      document.getElementById('progressFill').style.width = '0%';
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                
+                // Activar step actual
+                document.getElementById(step.id).classList.add('active');
+                
+                // Actualizar progreso
+                document.getElementById('progressFill').style.width = step.progress + '%';
+                
+                // Esperar duración del step
+                await new Promise(resolve => setTimeout(resolve, step.duration));
+                
+                // Desactivar step
+                document.getElementById(step.id).classList.remove('active');
+            }
+            
+            // Generar resultado aleatorio
+            const resultados = [
+                {
+                    tipo: 'success',
+                    icon: '✅',
+                    titulo: 'APROBADO',
+                    descripcion: `${nombre} ha sido validado exitosamente. Score de riesgo: 85/100. Tiempo: 28 segundos.`,
+                    score: 85
+                },
+                {
+                    tipo: 'warning',
+                    icon: '⚠️',
+                    titulo: 'REVISIÓN MANUAL',
+                    descripcion: `${nombre} requiere verificación adicional. Enviado a cola de alto riesgo. Tiempo: 29 segundos.`,
+                    score: 65
+                },
+                {
+                    tipo: 'danger',
+                    icon: '❌',
+                    titulo: 'RECHAZADO',
+                    descripcion: `Validación de ${nombre} rechazada por indicadores de fraude. Score de riesgo: 15/100.`,
+                    score: 15
+                }
+            ];
+            
+            const resultado = resultados[Math.floor(Math.random() * resultados.length)];
+            
+            // Actualizar base de datos con resultado
+            if (supabase && recordId) {
+                try {
+                    await supabase
+                        .from('validaciones')
+                        .update({
+                            estado: 'completado',
+                            resultado: resultado.titulo.toLowerCase(),
+                            score_riesgo: resultado.score,
+                            tiempo_procesamiento: Math.floor(Math.random() * 5) + 26 // 26-30 segundos
+                        })
+                        .eq('id', recordId);
+                } catch (error) {
+                    console.log('Error actualizando resultado:', error);
+                }
+            }
+            
+            // Mostrar resultado
+            showResult(resultado);
+        }
 
-      // Mostrar formulario nuevamente
-      document.getElementById('validationForm').style.display = 'block';
-    }
-  </script>
-
+        function showResult(resultado) {
+            document.getElementById('loadingSection').classList.remove('show');
+            
+            const resultSection = document.getElementById('resultSection');
+            resultSection.className = `result show ${resultado.tipo}`;
+            
+            document.getElementById('resultIcon').textContent = resultado.icon;
+            document.getElementById('resultTitle').textContent = resultado.titulo;
+            document.getElementById('resultDescription').textContent = resultado.descripcion;
+            
+            // Configurar botón del dashboard
+            if (DASHBOARD_URL !== 'TU_DASHBOARD_URL_AQUI') {
+                document.getElementById('dashboardBtn').href = DASHBOARD_URL;
+            } else {
+                document.getElementById('dashboardBtn').href = '#';
+                document.getElementById('dashboardBtn').onclick = function() {
+                    alert('Configura DASHBOARD_URL en el código para ver el dashboard completo');
+                    return false;
+                };
+            }
+        }
+    </script>
 </body>
 </html>
 
