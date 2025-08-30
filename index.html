@@ -54,8 +54,6 @@
       <p id="resultDescription"></p>
       <a href="#" class="btn-dashboard" id="dashboardBtn">📊 Ver Dashboard</a>
     </div>
-    <br/>
-<button class="btn-primary" onclick="reiniciarFormulario()">🔁 Solicitar otra validación</button>
     <div class="demo-note">💡 <strong>Demo:</strong> Resultados simulados aleatoriamente. No corresponde a datos reales.</div>
   </div>
   <script>
@@ -110,6 +108,26 @@
       document.getElementById('resultTitle').textContent = r.titulo;
       document.getElementById('resultDescription').textContent = r.descripcion;
       document.getElementById('dashboardBtn').href = DASHBOARD_URL;
+      // Mostrar botón para reiniciar
+const reiniciarBtn = document.createElement("button");
+reiniciarBtn.textContent = "🔁 Solicitar otra validación";
+reiniciarBtn.className = "btn-primary";
+reiniciarBtn.onclick = reiniciarFormulario;
+
+document.getElementById("resultSection").appendChild(document.createElement("br"));
+document.getElementById("resultSection").appendChild(reiniciarBtn);
+function reiniciarFormulario() {
+  document.getElementById('nombre').value = '';
+  document.getElementById('telefono').value = '';
+  document.getElementById('empresa').value = '';
+  
+  document.getElementById('resultSection').className = 'result';
+  document.getElementById('resultSection').innerHTML = ''; // limpia contenido previo
+
+  document.getElementById('validationForm').style.display = 'block';
+  document.getElementById('progressFill').style.width = '0%';
+}
+
     }
   </script>
 </body>
