@@ -1,107 +1,200 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-
-export default function ValidationFlow() {
-  const [step, setStep] = useState("intro");
-  const [result, setResult] = useState(null);
-
-  const handleValidate = () => {
-    setStep("validating");
-    setTimeout(() => {
-      const isApproved = Math.random() > 0.5;
-      setResult(isApproved ? "Aprobado" : "Rechazado");
-      setStep("result");
-    }, 3000);
-  };
-
-  const handleRestart = () => {
-    setResult(null);
-    setStep("intro");
-  };
-
-  return (
-    <div className="p-8 max-w-2xl mx-auto space-y-6">
-      {step === "intro" && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-4"
-        >
-          <h1 className="text-2xl font-bold">🔍 Validación de Información</h1>
-          <p>Haz clic en el botón para validar tu información.</p>
-          <Button onClick={handleValidate}>Validar Información</Button>
-        </motion.div>
-      )}
-
-      {step === "validating" && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center"
-        >
-          <p className="text-lg animate-pulse">⏳ Validando...</p>
-        </motion.div>
-      )}
-
-      {step === "result" && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-4"
-        >
-          <Card>
-            <CardContent className="text-center py-6">
-              <h2 className="text-xl font-semibold">
-                {result === "Aprobado" ? "✅ Validación Aprobada" : "❌ Validación Rechazada"}
-              </h2>
-              <p className="text-gray-500 mt-2">
-                Resultado final del proceso de verificación.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Indicadores financieros y dashboard */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold">📊 Indicadores Financieros</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <motion.div whileHover={{ scale: 1.05 }} className="bg-green-100 p-4 rounded-2xl shadow">
-                <p className="text-sm">Gross Profit</p>
-                <p className="text-xl font-semibold">$45,000</p>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} className="bg-blue-100 p-4 rounded-2xl shadow">
-                <p className="text-sm">EBITDA</p>
-                <p className="text-xl font-semibold">$28,000</p>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} className="bg-yellow-100 p-4 rounded-2xl shadow">
-                <p className="text-sm">Gross Margin</p>
-                <p className="text-xl font-semibold">62%</p>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} className="bg-red-100 p-4 rounded-2xl shadow">
-                <p className="text-sm">EBITDA %</p>
-                <p className="text-xl font-semibold">41%</p>
-              </motion.div>
-            </div>
-
-            <div className="text-center">
-              <a
-                href="https://trusty-validate-dash.lovable.app/"
-                target="_blank"
-                className="text-blue-600 font-semibold underline"
-              >
-                Ver Dashboard Completo
-              </a>
-            </div>
-          </div>
-
-          <div className="text-center mt-6">
-            <Button variant="outline" onClick={handleRestart}>🔁 Realizar otra validación</Button>
-          </div>
-        </motion.div>
-      )}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truora - Validación de Identidad</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 1em;
+            background: white;
+        }
+        input[type="text"]:focus, input[type="tel"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-dashboard {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        .btn-dashboard:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .loading, .result { display: none; }
+        .loading.show, .result.show { display: block; }
+        .result.success { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
+        .result.warning { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
+        .result.danger { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo">🔐 TRUORA</div>
+    <p class="subtitle">Validación de Identidad Inteligente</p>
+    <form id="validationForm">
+        <div class="form-group">
+            <label for="nombre">Nombre completo</label>
+            <input type="text" id="nombre" name="nombre" required placeholder="Ej: Juan Carlos Pérez">
+        </div>
+        <div class="form-group">
+            <label for="telefono">Número de teléfono</label>
+            <input type="tel" id="telefono" name="telefono" required placeholder="Ej: +57 300 123 4567">
+        </div>
+        <div class="form-group">
+            <label for="empresa">Empresa solicitante</label>
+            <input type="text" id="empresa" name="empresa" required placeholder="Ej: ADDI">
+        </div>
+        <button type="submit" class="btn-primary" id="submitBtn">🚀 Iniciar Validación</button>
+    </form>
+    <div class="loading" id="loadingSection">
+        <p>⏳ Procesando...</p>
     </div>
-  );
-}
+    <div class="result" id="resultSection">
+        <div id="resultIcon" style="font-size: 2em; margin-bottom: 10px;"></div>
+        <div id="resultTitle" style="font-size: 1.5em; font-weight: bold;"></div>
+        <div id="resultDescription" style="margin-top: 10px;"></div>
+        <a href="#" class="btn-dashboard" id="dashboardBtn">📊 Ver Dashboard</a>
+        <button id="retryBtn" class="btn-dashboard" style="display:none; margin-left: 10px;">🔁 Realizar otra Validación</button>
+    </div>
+</div>
+<script>
+    const SUPABASE_URL = 'https://hsflgsnvcwwbmnmcblfv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzZmxnc252Y3d3Ym1ubWNibGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1NjEyNjksImV4cCI6MjA3MjEzNzI2OX0.svszpLac0yeixbjDZoq6IfP32HcwNaNQ4ue95YinH2U';
+    const DASHBOARD_URL = 'https://trusty-validate-dash.lovable.app/';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById('validationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const nombre = document.getElementById('nombre').value;
+        const telefono = document.getElementById('telefono').value;
+        const empresa = document.getElementById('empresa').value;
+        document.getElementById('validationForm').style.display = 'none';
+        document.getElementById('loadingSection').classList.add('show');
+
+        const { data, error } = await supabase.from('validaciones').insert([{
+            nombre, telefono, empresa, estado: 'procesando'
+        ]]).select();
+
+        const recordId = data?.[0]?.id || null;
+
+        await new Promise(r => setTimeout(r, 3000));
+        const resultados = [
+            { tipo: 'success', icon: '✅', titulo: 'APROBADO', descripcion: `${nombre} ha sido validado exitosamente.` },
+            { tipo: 'warning', icon: '⚠️', titulo: 'REVISIÓN MANUAL', descripcion: `${nombre} requiere verificación adicional.` },
+            { tipo: 'danger', icon: '❌', titulo: 'RECHAZADO', descripcion: `Validación de ${nombre} rechazada.` }
+        ];
+        const resultado = resultados[Math.floor(Math.random() * resultados.length)];
+
+        if (recordId) {
+            await supabase.from('validaciones').update({
+                estado: 'completado', resultado: resultado.titulo.toLowerCase()
+            }).eq('id', recordId);
+        }
+
+        document.getElementById('loadingSection').classList.remove('show');
+        const resultSection = document.getElementById('resultSection');
+        resultSection.className = `result show ${resultado.tipo}`;
+        document.getElementById('resultIcon').textContent = resultado.icon;
+        document.getElementById('resultTitle').textContent = resultado.titulo;
+        document.getElementById('resultDescription').textContent = resultado.descripcion;
+        document.getElementById('dashboardBtn').href = DASHBOARD_URL;
+        document.getElementById('retryBtn').style.display = 'inline-block';
+    });
+
+    document.getElementById('retryBtn').addEventListener('click', () => {
+        document.getElementById('resultSection').classList.remove('show');
+        document.getElementById('validationForm').reset();
+        document.getElementById('validationForm').style.display = 'block';
+    });
+</script>
+</body>
+</html>
+
+
 
 
