@@ -54,12 +54,14 @@
       <p id="resultDescription"></p>
       <a href="#" class="btn-dashboard" id="dashboardBtn">📊 Ver Dashboard</a>
     </div>
+    <br/>
+<button class="btn-primary" onclick="reiniciarFormulario()">🔁 Solicitar otra validación</button>
     <div class="demo-note">💡 <strong>Demo:</strong> Resultados simulados aleatoriamente. No corresponde a datos reales.</div>
   </div>
   <script>
     const SUPABASE_URL = 'https://hsflgsnvcwwbmnmcblfv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzZmxnc252Y3d3Ym1ubWNibGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1NjEyNjksImV4cCI6MjA3MjEzNzI2OX0.svszpLac0yeixbjDZoq6IfP32HcwNaNQ4ue95YinH2U';
-    const DASHBOARD_URL = '#';
+    const DASHBOARD_URL = 'https://trusty-validate-dash.lovable.app/';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     document.getElementById('validationForm').addEventListener('submit', async function(e) {
       e.preventDefault();
