@@ -231,31 +231,21 @@
     <div class="container">
         <div class="logo">🔐 TRUORA</div>
         <p class="subtitle">Validación de Identidad Inteligente</p>
-        
         <form id="validationForm">
             <div class="form-group">
                 <label for="nombre">Nombre completo</label>
-                <input type="text" id="nombre" name="nombre" required 
-                       placeholder="Ej: Juan Carlos Pérez">
+                <input type="text" id="nombre" name="nombre" required placeholder="Ej: Juan Carlos Pérez">
             </div>
-
             <div class="form-group">
                 <label for="telefono">Número de teléfono</label>
-                <input type="tel" id="telefono" name="telefono" required 
-                       placeholder="Ej: +57 300 123 4567">
+                <input type="tel" id="telefono" name="telefono" required placeholder="Ej: +57 300 123 4567">
             </div>
-
             <div class="form-group">
                 <label for="empresa">Empresa solicitante</label>
-                <input type="text" id="empresa" name="empresa" required 
-                       placeholder="Ej: ADDI">
+                <input type="text" id="empresa" name="empresa" required placeholder="Ej: ADDI">
             </div>
-
-            <button type="submit" class="btn-primary" id="submitBtn">
-                🚀 Iniciar Validación
-            </button>
+            <button type="submit" class="btn-primary" id="submitBtn">🚀 Iniciar Validación</button>
         </form>
-
         <div class="loading" id="loadingSection">
             <div class="loading-text">⚡ Procesando validación...</div>
             <div class="progress-bar">
@@ -268,61 +258,41 @@
                 <div class="step" id="step4">✅ Generando resultado...</div>
             </div>
         </div>
-
         <div class="result" id="resultSection">
             <div class="result-icon" id="resultIcon"></div>
             <div class="result-title" id="resultTitle"></div>
             <div class="result-description" id="resultDescription"></div>
             <a href="#" class="btn-dashboard" id="dashboardBtn">📊 Ver Dashboard</a>
+            <br><br>
+            <button class="btn-primary" onclick="reiniciarFormulario()">🔁 Realizar otra validación</button>
         </div>
-
         <div class="demo-note">
-            💡 <strong>Demo en vivo:</strong> Esta es una simulación para fines de presentación. 
-            Los resultados son generados aleatoriamente para mostrar las capacidades del sistema.
+            💡 <strong>Demo en vivo:</strong> Esta es una simulación para fines de presentación. Los resultados son generados aleatoriamente para mostrar las capacidades del sistema.
         </div>
     </div>
 
     <script>
-        // REEMPLAZA ESTAS CREDENCIALES CON LAS TUYAS DE SUPABASE
         const SUPABASE_URL = 'TU_SUPABASE_URL_AQUI';
         const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY_AQUI';
-        
-        // URL del dashboard (reemplazar con tu URL de Lovable del dashboard)
         const DASHBOARD_URL = 'TU_DASHBOARD_URL_AQUI';
-
-        // Inicializar Supabase (solo si las credenciales están configuradas)
         let supabase = null;
         if (SUPABASE_URL !== 'TU_SUPABASE_URL_AQUI') {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-
         document.getElementById('validationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const nombre = document.getElementById('nombre').value;
             const telefono = document.getElementById('telefono').value;
             const empresa = document.getElementById('empresa').value;
-            
-            // Ocultar formulario y mostrar loading
             document.getElementById('validationForm').style.display = 'none';
             document.getElementById('loadingSection').classList.add('show');
-            
-            // Guardar en base de datos (si está configurada)
             let recordId = null;
             if (supabase) {
                 try {
                     const { data, error } = await supabase
                         .from('validaciones')
-                        .insert([
-                            { 
-                                nombre: nombre, 
-                                telefono: telefono, 
-                                empresa: empresa,
-                                estado: 'procesando'
-                            }
-                        ])
+                        .insert([{ nombre, telefono, empresa, estado: 'procesando' }])
                         .select();
-                    
                     if (!error && data.length > 0) {
                         recordId = data[0].id;
                     }
@@ -330,8 +300,6 @@
                     console.log('Error guardando en Supabase:', error);
                 }
             }
-            
-            // Simular proceso de validación
             await simulateValidation(recordId, nombre, telefono, empresa);
         });
 
@@ -342,51 +310,19 @@
                 { id: 'step3', duration: 8000, progress: 75 },
                 { id: 'step4', duration: 2000, progress: 100 }
             ];
-
             for (let i = 0; i < steps.length; i++) {
                 const step = steps[i];
-                
-                // Activar step actual
                 document.getElementById(step.id).classList.add('active');
-                
-                // Actualizar progreso
                 document.getElementById('progressFill').style.width = step.progress + '%';
-                
-                // Esperar duración del step
                 await new Promise(resolve => setTimeout(resolve, step.duration));
-                
-                // Desactivar step
                 document.getElementById(step.id).classList.remove('active');
             }
-            
-            // Generar resultado aleatorio
             const resultados = [
-                {
-                    tipo: 'success',
-                    icon: '✅',
-                    titulo: 'APROBADO',
-                    descripcion: `${nombre} ha sido validado exitosamente. Score de riesgo: 85/100. Tiempo: 28 segundos.`,
-                    score: 85
-                },
-                {
-                    tipo: 'warning',
-                    icon: '⚠️',
-                    titulo: 'REVISIÓN MANUAL',
-                    descripcion: `${nombre} requiere verificación adicional. Enviado a cola de alto riesgo. Tiempo: 29 segundos.`,
-                    score: 65
-                },
-                {
-                    tipo: 'danger',
-                    icon: '❌',
-                    titulo: 'RECHAZADO',
-                    descripcion: `Validación de ${nombre} rechazada por indicadores de fraude. Score de riesgo: 15/100.`,
-                    score: 15
-                }
+                { tipo: 'success', icon: '✅', titulo: 'APROBADO', descripcion: `${nombre} ha sido validado exitosamente. Score de riesgo: 85/100. Tiempo: 28 segundos.`, score: 85 },
+                { tipo: 'warning', icon: '⚠️', titulo: 'REVISIÓN MANUAL', descripcion: `${nombre} requiere verificación adicional. Enviado a cola de alto riesgo. Tiempo: 29 segundos.`, score: 65 },
+                { tipo: 'danger', icon: '❌', titulo: 'RECHAZADO', descripcion: `Validación de ${nombre} rechazada por indicadores de fraude. Score de riesgo: 15/100.`, score: 15 }
             ];
-            
             const resultado = resultados[Math.floor(Math.random() * resultados.length)];
-            
-            // Actualizar base de datos con resultado
             if (supabase && recordId) {
                 try {
                     await supabase
@@ -395,29 +331,23 @@
                             estado: 'completado',
                             resultado: resultado.titulo.toLowerCase(),
                             score_riesgo: resultado.score,
-                            tiempo_procesamiento: Math.floor(Math.random() * 5) + 26 // 26-30 segundos
+                            tiempo_procesamiento: Math.floor(Math.random() * 5) + 26
                         })
                         .eq('id', recordId);
                 } catch (error) {
                     console.log('Error actualizando resultado:', error);
                 }
             }
-            
-            // Mostrar resultado
             showResult(resultado);
         }
 
         function showResult(resultado) {
             document.getElementById('loadingSection').classList.remove('show');
-            
             const resultSection = document.getElementById('resultSection');
             resultSection.className = `result show ${resultado.tipo}`;
-            
             document.getElementById('resultIcon').textContent = resultado.icon;
             document.getElementById('resultTitle').textContent = resultado.titulo;
             document.getElementById('resultDescription').textContent = resultado.descripcion;
-            
-            // Configurar botón del dashboard
             if (DASHBOARD_URL !== 'TU_DASHBOARD_URL_AQUI') {
                 document.getElementById('dashboardBtn').href = DASHBOARD_URL;
             } else {
@@ -427,6 +357,14 @@
                     return false;
                 };
             }
+        }
+
+        function reiniciarFormulario() {
+            document.getElementById('nombre').value = '';
+            document.getElementById('telefono').value = '';
+            document.getElementById('empresa').value = '';
+            document.getElementById('resultSection').className = 'result';
+            document.getElementById('validationForm').style.display = 'block';
         }
     </script>
 </body>
