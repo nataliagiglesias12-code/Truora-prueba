@@ -108,7 +108,28 @@
       document.getElementById('resultTitle').textContent = r.titulo;
       document.getElementById('resultDescription').textContent = r.descripcion;
       document.getElementById('dashboardBtn').href = DASHBOARD_URL;
-     
+     // Crear botón de reinicio dinámicamente
+const reiniciarBtn = document.createElement("button");
+reiniciarBtn.textContent = "🔁 Solicitar otra validación";
+reiniciarBtn.className = "btn-primary";
+reiniciarBtn.style.marginTop = "15px";
+reiniciarBtn.onclick = reiniciarFormulario;
+
+// Añadir el botón debajo del resultado
+document.getElementById("resultSection").appendChild(reiniciarBtn);
+
+      function reiniciarFormulario() {
+  document.getElementById('nombre').value = '';
+  document.getElementById('telefono').value = '';
+  document.getElementById('empresa').value = '';
+
+  document.getElementById('validationForm').style.display = 'block';
+  document.getElementById('resultSection').className = 'result';
+  document.getElementById('resultSection').innerHTML = ''; // borra todo lo anterior
+
+  document.getElementById('progressFill').style.width = '0%';
+}
+
 }
 
     }
